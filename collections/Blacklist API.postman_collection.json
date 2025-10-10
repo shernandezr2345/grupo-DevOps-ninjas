@@ -1,0 +1,424 @@
+{
+	"info": {
+		"_postman_id": "9cc3b66e-f917-4f57-be1a-aa990c999741",
+		"name": "Blacklist API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29228723"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "AUTO - Get Access Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains access_token\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('access_token');",
+									"    pm.expect(jsonData.access_token).to.be.a('string');",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.collectionVariables.set(\"authToken\", pm.response.json().access_token);",
+									"    console.log(\"Auth Token successfully fetched and stored.\");",
+									"}",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/get-token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"get-token"
+							]
+						},
+						"description": "Este request es llamado automáticamente por el script de pre-request de la colección si el token no existe. También puede ser ejecutado manualmente."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "POST /blacklists",
+			"item": [
+				{
+					"name": "Success - Create a new blacklist entry",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const randomEmail = \"testuser.\" + pm.variables.replaceIn('{{$randomUUID}}') + \"@example.com\";",
+									"pm.collectionVariables.set(\"randomEmail\", randomEmail);",
+									"console.log(\"Generated random email for test: \" + randomEmail);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response body has correct success message\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.eql(\"Email added to blacklist successfully\");",
+									"});",
+									"",
+									"pm.collectionVariables.set(\"createdEmail\", pm.collectionVariables.get(\"randomEmail\"));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{randomEmail}}\",\n    \"app_uuid\": \"{{$guid}}\",\n    \"blocked_reason\": \"Automated test entry.\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/blacklists",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blacklists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Failure - Attempt to create a duplicate entry",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409 Conflict\", function () {",
+									"    pm.response.to.have.status(409);",
+									"});",
+									"",
+									"pm.test(\"Response body has correct error message\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.message).to.eql(\"Email already exists in the blacklist\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{createdEmail}}\",\n    \"app_uuid\": \"{{$guid}}\",\n    \"blocked_reason\": \"Attempting duplicate.\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/blacklists",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blacklists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Failure - Invalid email format",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message for invalid email is present\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"    pm.expect(jsonData.email[0]).to.eql(\"Not a valid email address.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"not-a-valid-email\",\n    \"app_uuid\": \"{{$guid}}\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/blacklists",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blacklists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Failure - Missing required field (email)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 Bad Request\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test(\"Error message for missing email is present\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('email');",
+									"    pm.expect(jsonData.email[0]).to.eql(\"Missing data for required field.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"app_uuid\": \"{{$guid}}\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/blacklists",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blacklists"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "GET /blacklists/:email",
+			"item": [
+				{
+					"name": "Success - Find an existing email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates email is blacklisted\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.is_blacklisted).to.be.true;",
+									"    pm.expect(jsonData.reason).to.eql(\"Automated test entry.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/blacklists/{{createdEmail}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blacklists",
+								"{{createdEmail}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Success - Check an email that is not in the blacklist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response indicates email is not blacklisted\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.is_blacklisted).to.be.false;",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/blacklists/safe-email-{{$randomUUID}}@example.com",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blacklists",
+								"safe-email-{{$randomUUID}}@example.com"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{authToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"requests": {},
+				"exec": [
+					"if (!pm.collectionVariables.get(\"authToken\")) {",
+					"    console.log(\"Auth Token not found, fetching a new one...\");",
+					"    pm.sendRequest({",
+					"        url: pm.collectionVariables.get(\"baseUrl\") + '/get-token',",
+					"        method: 'GET'",
+					"    }, function (err, response) {",
+					"        if (err) {",
+					"            console.error(err);",
+					"        } else {",
+					"            if(response.code === 200) {",
+					"                pm.collectionVariables.set(\"authToken\", response.json().access_token);",
+					"                console.log(\"New Auth Token fetched and stored successfully.\");",
+					"            } else {",
+					"                console.error(\"Failed to fetch auth token. Status: \" + response.code);",
+					"            }",
+					"        }",
+					"    });",
+					"}",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5001"
+		},
+		{
+			"key": "authToken",
+			"value": ""
+		},
+		{
+			"key": "randomEmail",
+			"value": ""
+		},
+		{
+			"key": "createdEmail",
+			"value": ""
+		}
+	]
+}
