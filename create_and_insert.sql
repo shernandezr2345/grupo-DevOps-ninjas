@@ -1,6 +1,3 @@
--- =========================================
--- CREACIÓN DE TABLA: blacklist
--- =========================================
 CREATE TABLE IF NOT EXISTS blacklist (
     id SERIAL PRIMARY KEY,
     email VARCHAR(120) UNIQUE NOT NULL,
@@ -10,14 +7,6 @@ CREATE TABLE IF NOT EXISTS blacklist (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Índices recomendados para acelerar búsquedas frecuentes
-CREATE INDEX IF NOT EXISTS idx_blacklist_email ON blacklist (email);
-CREATE INDEX IF NOT EXISTS idx_blacklist_app_uuid ON blacklist (app_uuid);
-CREATE INDEX IF NOT EXISTS idx_blacklist_source_ip ON blacklist (source_ip);
-
--- =========================================
--- CARGA DE DATOS DE EJEMPLO
--- =========================================
 INSERT INTO blacklist (email, app_uuid, blocked_reason, source_ip, created_at) VALUES
 ('user1@example.com', 'a3e8d2c1-4f2b-4b6a-8d99-0f1a8bca1d11', 'Spam detected', '192.168.1.10', NOW()),
 ('user2@example.com', 'c7f2b8a3-1e9d-4c67-8f0a-9b2d7a3f2c99', 'Compromised account', '10.0.0.21', NOW()),
