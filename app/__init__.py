@@ -4,10 +4,14 @@ from flask_jwt_extended import create_access_token
 from .extensions import db, ma, jwt
 from .resources import BlacklistResource, BlacklistCheckResource
 
-def create_app():
+def create_app(config_name=None):
     app = Flask(__name__)
     
-    app.config.from_object('app.config.Config')
+    # Use provided config or default to Config
+    if config_name:
+        app.config.from_object(config_name)
+    else:
+        app.config.from_object('app.config.Config')
 
     api = Api(app) 
 
@@ -17,8 +21,10 @@ def create_app():
 
     from . import models
 
-    with app.app_context():
-        db.create_all()
+    # Only create tables automatically if not in testing mode
+    if not app.config.get('TESTING', False):
+        with app.app_context():
+            db.create_all()
 
     api.add_resource(BlacklistResource, '/blacklists')
     api.add_resource(BlacklistCheckResource, '/blacklists/<string:email>')
