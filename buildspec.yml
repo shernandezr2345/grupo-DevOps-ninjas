@@ -1,0 +1,28 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - pip install --upgrade pip
+      - pip install -r requirements.txt
+      - pip install pytest
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 930800958862.dkr.ecr.us-east-1.amazonaws.com
+  build:
+    commands:
+      - echo "Running tests..."
+       pytest -q
+      - echo Build started on `date`
+      - echo Building the Docker image...          
+      - docker build -t repo-ecr-entrega-2 .
+      - docker tag repo-ecr-entrega-2:latest 930800958862.dkr.ecr.us-east-1.amazonaws.com/repo-ecr-entrega-2:latest
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push 930800958862.dkr.ecr.us-east-1.amazonaws.com/repo-ecr-entrega-2:latest
+artifacts:
+  files:
+    - '**/*'
