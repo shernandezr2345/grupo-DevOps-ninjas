@@ -12,6 +12,7 @@ phases:
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 930800958862.dkr.ecr.us-east-1.amazonaws.com
   build:
     commands:
+      - export SECRET_KEY="u16af09a4848fd6373dd23e36d3446b486d0873515b5bcec3535946c7940ab78d"
       - echo "Running tests..."
       - pytest -q
       - echo Build started on `date`
