@@ -19,7 +19,7 @@ class TestBlacklistAPI:
         response = client.post('/blacklists', json=payload, headers=auth_headers)
 
         assert response.status_code == 201
-        assert response.json['message'] == "Email added to blacklist error"
+        assert response.json['message'] == "Email added to blacklist successfully"
 
         entry = BlacklistModel.query.filter_by(email=payload['email']).first()
         assert entry is not None
