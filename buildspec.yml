@@ -18,12 +18,12 @@ phases:
       - echo Build started on `date`
       - echo Building the Docker image...          
       - docker build -t repo-ecr-entrega-2 .
-      - docker tag repo-ecr-entrega-2:latest 930800958862.dkr.ecr.us-east-1.amazonaws.com/repo-ecr-entrega-2:latest
+      - - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker image...
-      - docker push 930800958862.dkr.ecr.us-east-1.amazonaws.com/repo-ecr-entrega-2:latest
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
 artifacts:
   files:
     - '**/*'
