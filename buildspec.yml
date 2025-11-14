@@ -36,9 +36,9 @@ phases:
       - echo "== PUSH IMAGE =="
       - docker push $REPO_URI:$IMAGE_TAG
       - docker push $REPO_URI:latest
-      - echo "== UPDATING taskdef.json with new image =="
-      - sed -i "s|<IMAGE1_NAME>|$REPO_URI:$IMAGE_TAG|g" taskdef.json
-      - cat taskdef.json
+      - echo "== GENERATING imagedefinitions.json =="
+      - printf '[{"name":"BlackListApp","imageUri":"%s"}]' $REPO_URI:$IMAGE_TAG > imagedefinitions.json
+      - cat imagedefinitions.json
       - echo "== GENERATING appspec.yaml =="
       - |
         cat > appspec.yaml <<EOF
@@ -53,9 +53,11 @@ phases:
                   ContainerPort: 5000
         EOF
       - cat appspec.yaml
+      - cat taskdef.json
 
 artifacts:
   files:
     - appspec.yaml
     - taskdef.json
+    - imagedefinitions.json
   name: BuildArtifact
