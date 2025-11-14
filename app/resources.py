@@ -53,4 +53,3 @@ class BlacklistCheckResource(Resource):
         else:
             return {"is_blacklisted": False}, 200
 
-# Test for blue/green deployment
