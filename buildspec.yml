@@ -9,34 +9,44 @@ env:
 phases:
   install:
     commands:
-      - set -e
+      - echo "== INSTALL PHASE =="
       - pip install --upgrade pip
       - pip install -r requirements.txt
       - pip install pytest
+
   pre_build:
     commands:
-      - set -e
+      - echo "== PRE-BUILD PHASE =="
       - export AWS_REGION=${AWS_DEFAULT_REGION:-$DEFAULT_REGION}
       - export REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME
       - export IMAGE_TAG=${CODEBUILD_BUILD_NUMBER:-latest}
-      # Para los tests 
-      - export SECRET_KEY="${SECRET_KEY:-u16af09a4848fd6373dd23e36d3446b486d0873515b5bcec3535946c7940ab78d}"
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - echo Logging into ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPO_URI
+
   build:
     commands:
-      - echo "Running tests..."
+      - echo "== TESTS =="
       - pytest -q
-      - echo "Building image..."
+      - echo "== BUILD IMAGE =="
       - docker build -t $REPO_URI:$IMAGE_TAG -t $REPO_URI:latest .
+
   post_build:
     commands:
-      - echo "Pushing image..."
+      - echo "== PUSH IMAGE =="
       - docker push $REPO_URI:$IMAGE_TAG
       - docker push $REPO_URI:latest
-      - echo "OK"
+
+      - echo "== GENERATING taskdef-output.json =="
+      - sed "s|<IMAGE1_NAME>|$REPO_URI:$IMAGE_TAG|g" taskdef.json > taskdef-output.json
+
+      - echo "== GENERATING appspec-output.yaml =="
+      - printf "version: 1\nResources:\n  - TargetService:\n      Type: AWS::ECS::Service\n      Properties:\n        TaskDefinition: $REPO_URI:$IMAGE_TAG\n        LoadBalancerInfo:\n          ContainerName: BlackListApp\n          ContainerPort: 5000\n" > appspec-output.yaml
+
+      - echo "Build completed successfully."
 
 artifacts:
   files:
     - appspec-output.yaml
+    - taskdef-output.json
   name: BuildArtifact
   discard-paths: yes
