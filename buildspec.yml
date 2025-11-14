@@ -35,23 +35,21 @@ phases:
       - echo "== PUSH IMAGE =="
       - docker push $REPO_URI:$IMAGE_TAG
       - docker push $REPO_URI:latest
-
       - echo "== GENERATING taskdef-output.json =="
       - sed "s|<IMAGE1_NAME>|$REPO_URI:$IMAGE_TAG|g" taskdef.json > taskdef-output.json
-
       - echo "== GENERATING appspec-output.yaml =="
-      - cat > appspec-output.yaml << 'EOF'
-version: 1
-Resources:
-  - TargetService:
-      Type: AWS::ECS::Service
-      Properties:
-        TaskDefinition: REPLACEME
-        LoadBalancerInfo:
-          ContainerName: BlackListApp
-          ContainerPort: 5000
-EOF
-
+      - |
+        cat > appspec-output.yaml << 'EOF'
+        version: 1
+        Resources:
+          - TargetService:
+              Type: AWS::ECS::Service
+              Properties:
+                TaskDefinition: REPLACEME
+                LoadBalancerInfo:
+                  ContainerName: BlackListApp
+                  ContainerPort: 5000
+        EOF
       - sed -i "s|REPLACEME|$REPO_URI:$IMAGE_TAG|g" appspec-output.yaml
 
 artifacts:
