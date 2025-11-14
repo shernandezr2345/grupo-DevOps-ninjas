@@ -11,5 +11,7 @@ class Config:
 
 class TestingConfig(Config):
     TESTING = True
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'test-secret-key-for-testing-only')
+    JWT_SECRET_KEY = os.environ.get('SECRET_KEY', 'test-secret-key-for-testing-only')
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
