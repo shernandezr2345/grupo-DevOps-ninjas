@@ -36,12 +36,12 @@ phases:
       - echo "== PUSH IMAGE =="
       - docker push $REPO_URI:$IMAGE_TAG
       - docker push $REPO_URI:latest
-      - echo "== GENERATING taskdef-output.json =="
-      - sed "s|<IMAGE1_NAME>|$REPO_URI:$IMAGE_TAG|g" taskdef.json > taskdef-output.json
-      - cat taskdef-output.json
-      - echo "== GENERATING appspec-output.yaml =="
+      - echo "== UPDATING taskdef.json with new image =="
+      - sed -i "s|<IMAGE1_NAME>|$REPO_URI:$IMAGE_TAG|g" taskdef.json
+      - cat taskdef.json
+      - echo "== GENERATING appspec.yaml =="
       - |
-        cat > appspec-output.yaml <<EOF
+        cat > appspec.yaml <<EOF
         version: 0.0
         Resources:
           - TargetService:
@@ -52,11 +52,10 @@ phases:
                   ContainerName: BlackListApp
                   ContainerPort: 5000
         EOF
-      - cat appspec-output.yaml
+      - cat appspec.yaml
 
 artifacts:
   files:
-    - appspec-output.yaml
-    - taskdef-output.json
+    - appspec.yaml
+    - taskdef.json
   name: BuildArtifact
-  discard-paths: yes
