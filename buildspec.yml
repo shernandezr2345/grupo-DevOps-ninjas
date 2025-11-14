@@ -34,3 +34,9 @@ phases:
       - docker push $REPO_URI:$IMAGE_TAG
       - docker push $REPO_URI:latest
       - echo "OK"
+
+artifacts:
+  files:
+    - appspec-output.yaml
+  name: BuildArtifact
+  discard-paths: yes
