@@ -1,0 +1,41 @@
+{
+  "family": "taskBlackListApp",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::723237626566:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::723237626566:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "BlackListApp",
+      "image": "<IMAGE1_NAME>",
+      "essential": true,
+      "environment": [
+        { "name": "DATABASE_URL", "value": "postgresql://blacklistUser:blacklistpassword@blacklistdb.c63yw2mi0qle.us-east-1.rds.amazonaws.com:5432/blacklistdb" },
+        { "name": "SECRET_KEY", "value": "u16af09a..." },
+        { "name": "POSTGRES_USER", "value": "blacklistUser" },
+        { "name": "POSTGRES_PASSWORD", "value": "blacklistpassword" },
+        { "name": "POSTGRES_DB", "value": "blacklistdb" },
+        { "name": "DB_HOST", "value": "blacklistdb.c63yw2mi0qle.us-east-1.rds.amazonaws.com" },
+        { "name": "PORT", "value": "5000" },
+        { "name": "FLASK_APP", "value": "wsgi.py" }
+      ],
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "protocol": "tcp",
+          "hostPort": 5000
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/taskBlackListApp",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "containerBlackListApp"
+        }
+      }
+    }
+  ]
+}

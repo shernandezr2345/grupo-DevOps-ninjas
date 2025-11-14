@@ -1,0 +1,15 @@
+version: 1
+Resources: [
+  {
+    TargetService: {
+      Type: "AWS::ECS::Service",
+      "Properties": {
+        TaskDefinition: "<TASK_DEFINITION>",
+        LoadBalancerInfo: {
+          ContainerName: "BlackListApp",
+          ContainerPort: 5000
+        }
+      }
+    }
+  }
+]

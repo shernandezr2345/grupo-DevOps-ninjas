@@ -2,8 +2,9 @@ version: 0.2
 
 env:
   variables:
-    IMAGE_REPO_NAME: repo-ecr-entrega-2      
-    DEFAULT_REGION: us-east-1             
+    IMAGE_REPO_NAME: black_list_app      
+    DEFAULT_REGION: us-east-2
+    AWS_ACCOUNT_ID: 723237626566             
 
 phases:
   install:
@@ -16,7 +17,6 @@ phases:
     commands:
       - set -e
       - export AWS_REGION=${AWS_DEFAULT_REGION:-$DEFAULT_REGION}
-      - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - export REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME
       - export IMAGE_TAG=${CODEBUILD_BUILD_NUMBER:-latest}
       # Para los tests 
