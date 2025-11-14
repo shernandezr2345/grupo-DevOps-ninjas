@@ -45,7 +45,7 @@ def create_app(config_name=None):
 
         return jsonify({
             "status": "ok", 
-            "message": "API is running - Test for blue/green deployment!",
+            "message": "API is running",
             "database_status": db_status
         }), 200
 
