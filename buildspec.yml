@@ -36,9 +36,11 @@ phases:
       - echo "== PUSH IMAGE =="
       - docker push $REPO_URI:$IMAGE_TAG
       - docker push $REPO_URI:latest
-      - echo "== GENERATING imagedefinitions.json =="
-      - printf '[{"name":"BlackListApp","imageUri":"%s"}]' $REPO_URI:$IMAGE_TAG > imagedefinitions.json
-      - cat imagedefinitions.json
+      - echo "== GENERATING imageDetail.json for IMAGE1_NAME placeholder =="
+      - echo "{\"ImageURI\":\"$REPO_URI:$IMAGE_TAG\"}" > imageDetail.json
+      - cat imageDetail.json
+      - echo "== Verifying taskdef.json =="
+      - cat taskdef.json
       - echo "== GENERATING appspec.yaml =="
       - |
         cat > appspec.yaml <<EOF
@@ -49,15 +51,13 @@ phases:
               Properties:
                 TaskDefinition: <TASK_DEFINITION>
                 LoadBalancerInfo:
-                  ContainerName: BlackListApp
+                  ContainerName: "BlackListApp"
                   ContainerPort: 5000
         EOF
       - cat appspec.yaml
-      - cat taskdef.json
 
 artifacts:
   files:
-    - appspec.yaml
+    - imageDetail.json
     - taskdef.json
-    - imagedefinitions.json
-  name: BuildArtifact
+    - appspec.yaml
