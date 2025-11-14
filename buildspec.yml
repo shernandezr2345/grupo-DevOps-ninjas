@@ -9,14 +9,14 @@ env:
 phases:
   install:
     commands:
-      - echo "== INSTALL PHASE =="
+      - echo "== INSTALL =="
       - pip install --upgrade pip
       - pip install -r requirements.txt
       - pip install pytest
 
   pre_build:
     commands:
-      - echo "== PRE-BUILD PHASE =="
+      - echo "== PRE-BUILD =="
       - export AWS_REGION=${AWS_DEFAULT_REGION:-$DEFAULT_REGION}
       - export REPO_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$IMAGE_REPO_NAME
       - export IMAGE_TAG=${CODEBUILD_BUILD_NUMBER:-latest}
@@ -40,9 +40,19 @@ phases:
       - sed "s|<IMAGE1_NAME>|$REPO_URI:$IMAGE_TAG|g" taskdef.json > taskdef-output.json
 
       - echo "== GENERATING appspec-output.yaml =="
-      - printf "version: 1\nResources:\n  - TargetService:\n      Type: AWS::ECS::Service\n      Properties:\n        TaskDefinition: $REPO_URI:$IMAGE_TAG\n        LoadBalancerInfo:\n          ContainerName: BlackListApp\n          ContainerPort: 5000\n" > appspec-output.yaml
+      - cat > appspec-output.yaml << 'EOF'
+version: 1
+Resources:
+  - TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: REPLACEME
+        LoadBalancerInfo:
+          ContainerName: BlackListApp
+          ContainerPort: 5000
+EOF
 
-      - echo "Build completed successfully."
+      - sed -i "s|REPLACEME|$REPO_URI:$IMAGE_TAG|g" appspec-output.yaml
 
 artifacts:
   files:
